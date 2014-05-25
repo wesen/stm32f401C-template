@@ -78,16 +78,19 @@ CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/hid/inc
 # CFLAGS += -I $(STD_PERIPH_LIB)/Libraries/STM32F4xx_StdPeriph_Driver/inc
 # CFLAGS += -I $(STD_PERIPH_LIB)/Projects/Demonstration/stm32f4xx_conf.h
 
-SRCS += stm32f401_discovery.c  \
-stm32f401_discovery_audio_codec.c \
-stm32f401_discovery_l3gd20.c \
-stm32f401_discovery_lsm303dlhc.c \
+SRCS += \
 stm32f4xx_it.c \
 system_stm32f4xx.c \
 usb_bsp.c \
 usbd_desc.c \
 usbd_usr.c \
 selftest.c
+
+SRCS += \
+../../Utilities/STM32F401-Discovery//stm32f401_discovery.c \
+../../Utilities/STM32F401-Discovery//stm32f401_discovery_audio_codec.c \
+../../Utilities/STM32F401-Discovery//stm32f401_discovery_l3gd20.c \
+../../Utilities/STM32F401-Discovery//stm32f401_discovery_lsm303dlhc.c
 
 # SRCS += stm32f0_discovery.c stm32f0xx_it.c
 
