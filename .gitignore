@@ -7,3 +7,7 @@
 /lib/STM32F401-Discovery_FW_V1.0.0/objs
 
 *.DS_Store
+
+*.o
+*.d
+*.swp

@@ -14,7 +14,7 @@ MCU=STM32F401xx
 BUILD_DIR=build
 
 # External libraries
-LIBRARIES = lib
+LIBRARIES = ../../..
 
 # Libraries from ST / ARM
 ST_FIRMWARE = $(LIBRARIES)/STM32F401-Discovery_FW_V1.0.0
@@ -46,6 +46,12 @@ CFLAGS += -ffunction-sections -fdata-sections
 
 LDFLAGS += -Wl,--gc-sections -Wl,-Map=$(BUILD_DIR)/$(PROJ_NAME).map
 
+CFLAGS += -DUSE_STDPERIPH_DRIVER
+CFLAGS += -DSTM32F401xx
+CFLAGS += -DUSE_USB_OTG_FS
+CFLAGS += -DUSE_STM32F401
+CFLAGS += -DI2S_INTERRUPT
+
 ###################################################
 
 vpath %.a $(STD_PERIPH_LIB)
@@ -55,27 +61,64 @@ ROOT=$(shell pwd)
 CFLAGS += -D $(MCU)
 CFLAGS += -L $(ST_FIRMWARE)
 CFLAGS += -I inc 
-CFLAGS += -I src
+CFLAGS += -I .
 CFLAGS += -I $(CMSIS)/Include
 CFLAGS += -I $(CMSIS)/Device/ST/STM32F4xx/Include
 CFLAGS += -I $(ST_FIRMWARE)
 CFLAGS += -I $(ST_FIRMWARE)/Libraries/stm32f4xx_StdPeriph_Driver/inc
 CFLAGS += -I $(ST_FIRMWARE)/Utilities/STM32F401-Discovery
-# CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Core/inc
+CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_OTG_Driver/inc
+CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Core/inc
 # CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/audio/inc
 # CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/cdc/inc
 # CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/dfu/inc
-# CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/hid/inc
+CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/hid/inc
 # CFLAGS += -I $(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/msc/inc
-#CFLAGS += -I $(CMSIS)/Include 
-#CFLAGS += -I $(STD_PERIPH_LIB)/Libraries/STM32F4xx_StdPeriph_Driver/inc
-#CFLAGS += -I $(STD_PERIPH_LIB)/Projects/Demonstration/stm32f4xx_conf.h
+# CFLAGS += -I $(CMSIS)/Include
+# CFLAGS += -I $(STD_PERIPH_LIB)/Libraries/STM32F4xx_StdPeriph_Driver/inc
+# CFLAGS += -I $(STD_PERIPH_LIB)/Projects/Demonstration/stm32f4xx_conf.h
 
-# SRCS += $(ST_FIRMWARE)/Utilities/STM32F401-Discovery/stm32f401_discovery.c
-#SRCS += stm32f0_discovery.c stm32f0xx_it.c
+SRCS += stm32f401_discovery.c  \
+stm32f401_discovery_audio_codec.c \
+stm32f401_discovery_l3gd20.c \
+stm32f401_discovery_lsm303dlhc.c \
+stm32f4xx_it.c \
+system_stm32f4xx.c \
+usb_bsp.c \
+usbd_desc.c \
+usbd_usr.c \
+selftest.c
 
-OBJS = $(addprefix $(BUILD_DIR)/objs/,$(SRCS:.c=.o))
-DEPS = $(addprefix $(BUILD_DIR)/deps/,$(SRCS:.c=.d))
+# SRCS += stm32f0_discovery.c stm32f0xx_it.c
+
+SRCS += \
+$(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Class/hid/src/usbd_hid_core.c
+
+SRCS += \
+$(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Core/src/usbd_core.c \
+$(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Core/src/usbd_ioreq.c \
+$(ST_FIRMWARE)/Libraries/STM32_USB_Device_Library/Core/src/usbd_req.c
+
+SRCS += \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/HID/src/usbh_hid_core.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/HID/src/usbh_hid_keybd.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/HID/src/usbh_hid_mouse.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_core.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
+#$(ST_FIRMWARE)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_stdreq.c
+
+SRCS += \
+$(ST_FIRMWARE)/Libraries/STM32_USB_OTG_Driver/src/usb_core.c \
+$(ST_FIRMWARE)/Libraries/STM32_USB_OTG_Driver/src/usb_dcd.c \
+$(ST_FIRMWARE)/Libraries/STM32_USB_OTG_Driver/src/usb_dcd_int.c
+
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 
 ###################################################
 
@@ -94,7 +137,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/deps $(BUILD_DIR)/objs
 
-$(BUILD_DIR)/objs/%.o : src/%.c $(BUILD_DIR)
+$(BUILD_DIR)/objs/%.o : %.c $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $< -MMD -MF $(BUILD_DIR)/deps/$(*F).d
 
 $(BUILD_DIR)/$(PROJ_NAME).elf: $(OBJS)
@@ -116,4 +159,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 reallyclean: clean
-        $(MAKE) -C $(ST_FIRMWARE) clean
+	$(MAKE) -C $(ST_FIRMWARE) clean

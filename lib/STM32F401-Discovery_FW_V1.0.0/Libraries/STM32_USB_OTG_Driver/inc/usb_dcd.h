@@ -32,7 +32,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usb_core.h"
 
-
 /** @addtogroup USB_OTG_DRIVER
 * @{
 */
